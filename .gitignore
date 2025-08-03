@@ -2,9 +2,6 @@
 .DS_Store
 Thumbs.db
 
-# Docker MySQL 데이터 볼륨 (Docker가 자동 생성하는 DB 파일)
-docker/mysql/init.sql~
-
 # 로그 파일
 *.log
 

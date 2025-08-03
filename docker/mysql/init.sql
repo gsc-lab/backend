@@ -1,42 +1,34 @@
--- 데이터베이스 생성 (존재하지 않으면)
-CREATE DATABASE IF NOT EXISTS gsc CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+-- -------------------------------
+-- DATABASE & CHARACTER SET 설정
+-- -------------------------------
+CREATE DATABASE IF NOT EXISTS gsc
+    CHARACTER SET utf8mb4           -- 다국어 및 이모지 지원
+    COLLATE utf8mb4_general_ci;
 
--- gsc 데이터베이스 사용
 USE gsc;
 
--- student 테이블 생성
-CREATE TABLE IF NOT EXISTS student (
-    no INT AUTO_INCREMENT PRIMARY KEY,           -- 순번 (자동 증가)
-    std_id VARCHAR(20) NOT NULL UNIQUE,          -- 학번 (유일)
-    id VARCHAR(20) NOT NULL UNIQUE,              -- 로그인 ID (유일)
-    password VARCHAR(100) NOT NULL,              -- 비밀번호 (해싱 필요)
-    name VARCHAR(50) NOT NULL,                   -- 이름
-    age INT,                                      -- 나이
-    birth DATE                                    -- 생년월일
-);
+-- -------------------------------
+-- 사용자 테이블 (회원 정보)
+-- -------------------------------
+CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,           -- 고유 사용자 ID (PK)
+    username VARCHAR(50) NOT NULL UNIQUE,        -- 로그인 ID (중복 불가)
+    password VARCHAR(255) NOT NULL,              -- 해시된 비밀번호
+    name VARCHAR(100) NOT NULL                   -- 사용자 실명 또는 닉네임
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-
--- -- 데이터베이스 생성
--- CREATE DATABASE IF NOT EXISTS myapp CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- -- 사용자 생성 (비밀번호는 'password123')
--- CREATE USER IF NOT EXISTS 'myuser'@'%' IDENTIFIED BY 'password123';
-
--- -- 권한 부여
--- GRANT ALL PRIVILEGES ON myapp.* TO 'myuser'@'%';
--- FLUSH PRIVILEGES;
-
--- -- 테이블 생성
--- USE myapp;
-
--- CREATE TABLE IF NOT EXISTS users (
---     id INT AUTO_INCREMENT PRIMARY KEY,
---     username VARCHAR(50) NOT NULL UNIQUE,
---     email VARCHAR(100),
---     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
--- );
-
--- -- 초기 데이터 삽입
--- INSERT INTO users (username, email) VALUES
--- ('alice', 'alice@example.com'),
--- ('bob', 'bob@example.com');
+-- -------------------------------
+-- 게시글 테이블 (게시판 본문)
+-- -------------------------------
+CREATE TABLE IF NOT EXISTS posts (
+    id INT AUTO_INCREMENT PRIMARY KEY,              -- 게시글 고유 ID (PK)
+    user_id INT NOT NULL,                           -- 작성자 ID (FK to users.id)
+    title VARCHAR(255) NOT NULL,                    -- 게시글 제목
+    content TEXT NOT NULL,                          -- 게시글 본문
+    views INT NOT NULL DEFAULT 0,                   -- 조회수 (기본 0)
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,  -- 작성일
+    updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP, -- 수정일
+    CONSTRAINT fk_posts_user FOREIGN KEY (user_id) REFERENCES users(id)
+    ON DELETE CASCADE                               -- 사용자가 삭제되면 게시글도 함께 삭제
+    ON UPDATE CASCADE                               -- 사용자 ID 변경 시 연동
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
